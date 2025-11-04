@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chatbot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem 1rem 3rem;
+      }
+
+      #chat-log {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid var(--muted-border-color);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        background: var(--card-background-color);
+        box-shadow: var(--card-box-shadow);
+      }
+
+      .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+      }
+
+      .message.user {
+        background: var(--primary-focus);
+        color: white;
+        align-self: flex-end;
+      }
+
+      .message.assistant {
+        background: var(--muted-border-color);
+      }
+
+      form {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      textarea {
+        resize: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>AI Chatbot</h1>
+        <p>Ask me anything! I'm powered by OpenAI's gpt-4o-mini model.</p>
+      </header>
+      <section id="chat-log" aria-live="polite"></section>
+      <form id="chat-form">
+        <textarea id="user-input" rows="2" placeholder="Type your message..." required></textarea>
+        <button type="submit" id="send-button">Send</button>
+      </form>
+    </main>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </body>
+</html>
