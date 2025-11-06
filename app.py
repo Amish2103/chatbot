@@ -4,7 +4,6 @@ from typing import List, Dict, Any
 from flask import Flask, jsonify, render_template, request
 from openai import OpenAI, OpenAIError
 
-
 app = Flask(__name__)
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -18,43 +17,36 @@ SYSTEM_PROMPT = (
     "Keep your replies concise, clear, and engaging."
 )
 
-
-def build_messages(history: List[Dict[str, str]], user_message: str) -> List[Dict[str, Any]]:
-    messages: List[Dict[str, Any]] = [
+def build_messages(history: List[Dict[str, str]], user_message: str):
+    messages = [
         {
             "role": "system",
-            "content": [{"type": "text", "text": SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": SYSTEM_PROMPT}]
         }
     ]
 
-    for message in history:
-        role = message.get("role")
-        content = message.get("content", "")
-        if role not in {"user", "assistant"} or not content:
-            continue
-        messages.append(
-            {
-                "role": role,
-                "content": [{"type": "text", "text": content}],
-            }
-        )
+    for msg in history:
+        if msg.get("role") in ["user", "assistant"]:
+            messages.append({
+                "role": msg["role"],
+                "content": [{"type": "text", "text": msg["content"]}]
+            })
 
-    messages.append(
-        {
-            "role": "user",
-            "content": [{"type": "text", "text": user_message}],
-        }
-    )
+    messages.append({
+        "role": "user",
+        "content": [{"type": "text", "text": user_message}]
+    })
+
     return messages
 
 
 @app.route("/")
-def index() -> str:
+def index():
     return render_template("index.html")
 
 
 @app.route("/api/chat", methods=["POST"])
-def chat() -> Any:
+def chat():
     data = request.get_json(silent=True) or {}
     user_message = (data.get("message") or "").strip()
     history = data.get("history") or []
@@ -65,14 +57,16 @@ def chat() -> Any:
     try:
         response = client.responses.create(
             model="gpt-4o-mini",
-            messages=build_messages(history, user_message),
+            input=build_messages(history, user_message)
         )
-        reply = response.output_text
+
+        reply = response.output[0].content[0].text
+
     except OpenAIError as exc:
-        return (
-            jsonify({"error": "Failed to contact OpenAI API.", "details": str(exc)}),
-            500,
-        )
+        return jsonify({
+            "error": "Failed to contact OpenAI API.",
+            "details": str(exc)
+        }), 500
 
     return jsonify({"reply": reply})
 
