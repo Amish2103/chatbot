@@ -54,17 +54,21 @@ def chat() -> Any:
     if not user_message:
         return jsonify({"error": "Message is required."}), 400
 
-    try:
+      try:
         response = client.responses.create(
             model="gpt-4o-mini",
-            messages=build_messages(history, user_message),
+            input=conversation_text  # <-- new correct argument
         )
-        reply = response.output_text
-    except OpenAIError as exc:
-        return (
-            jsonify({"error": "Failed to contact OpenAI API.", "details": str(exc)}),
-            500,
-        )
+
+        # ✅ Correct way to extract the model's reply in openai 2.7.1
+        reply = response.output[0].content[0].text.strip()
+
+    except Exception as exc:
+        return jsonify({
+            "error": "Failed to contact OpenAI API.",
+            "details": str(exc)
+        }), 500
+
 
     return jsonify({"reply": reply})
 
