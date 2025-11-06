@@ -46,7 +46,7 @@ def index():
 
 
 @app.route("/api/chat", methods=["POST"])
-def chat():
+def chat() -> Any:
     data = request.get_json(silent=True) or {}
     user_message = (data.get("message") or "").strip()
     history = data.get("history") or []
@@ -57,16 +57,14 @@ def chat():
     try:
         response = client.responses.create(
             model="gpt-4o-mini",
-            input=build_messages(history, user_message)
+            messages=build_messages(history, user_message),
         )
-
-        reply = response.output[0].content[0].text
-
+        reply = response.output_text
     except OpenAIError as exc:
-        return jsonify({
-            "error": "Failed to contact OpenAI API.",
-            "details": str(exc)
-        }), 500
+        return (
+            jsonify({"error": "Failed to contact OpenAI API.", "details": str(exc)}),
+            500,
+        )
 
     return jsonify({"reply": reply})
 
